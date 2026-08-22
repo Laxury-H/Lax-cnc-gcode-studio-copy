@@ -1280,11 +1280,7 @@ function ToolpathCanvas({
         </span>
         <code>{currentSegment?.raw.trim() || "—"}</code>
       </div>
-      <div className="plane-badge" aria-hidden="true">
-        <strong>{getViewMeta(view, t).short}</strong>
-        <span>{getViewMeta(view, t).title}</span>
-        <small>{getViewMeta(view, t).description}</small>
-      </div>
+
       <div
         className="canvas-telemetry"
         aria-label={`${activeCoordinateLabel}: tọa độ dao X ${currentPosition.x.toFixed(3)}, Y ${currentPosition.y.toFixed(3)}, Z ${currentPosition.z.toFixed(3)} ${activeUnits}`}
@@ -2867,6 +2863,12 @@ export default function Home() {
             active={!!drawer}
           />
           <ToolbarButton
+            icon="bot"
+            label={lang === "EN" ? "AI Assistant" : "Trợ lý AI"}
+            onClick={() => setDrawer(drawer === "ai" ? null : "ai")}
+            active={drawer === "ai"}
+          />
+          <ToolbarButton
             icon="settings"
             label={t.machineSetupTooltip}
             onClick={openSettings}
@@ -3489,10 +3491,13 @@ export default function Home() {
                   lang={lang} 
                   placeholder={t.aiInputPlaceholder} 
                   contextData={{
-                    tool: { name: simulation.tool.name, speed: simulation.tool.speed },
+                    tool: simulation.tool ? { name: simulation.tool.name, speed: simulation.tool.speed } : null,
                     diagnostics: simulation.diagnostics.length ? simulation.diagnostics.slice(0, 5) : [],
                     duration: (simulation.totalTime / 60).toFixed(1) + " mins",
-                    lineCount: program.lines.length
+                    lineCount: simulation.lines ? simulation.lines.length : 0,
+                    stock: stock,
+                    machineProfile: profile,
+                    playbackSpeed: speed
                   }} 
                 />
               ) : drawer === "diagnostics" ? (
