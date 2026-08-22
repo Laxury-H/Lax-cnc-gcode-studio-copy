@@ -1,0 +1,6 @@
+{
+  "name": "Lax's CNC",
+  "description": "A personal application to read, validate, measure, and simulate CNC toolpaths from G-code files.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
