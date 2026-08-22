@@ -203,3 +203,11 @@ và thiết bị thật trước khi phát hành.
 React 19, TypeScript, Vinext/Vite và Canvas 2D. Ứng dụng xử lý chương trình ngay
 trong trình duyệt; không tải G-code của người dùng lên một dịch vụ phân tích
 riêng.
+
+### AI Assistant (Mới cập nhật)
+
+Ứng dụng hiện tại đã được tích hợp trợ lý ảo **G-Code AI Assistant** thông qua Gemini API:
+- Chatbot hỗ trợ người dùng phân tích mã G-Code.
+- Trả lời các thắc mắc về CNC, thông số cắt (feeds, speeds).
+- Tích hợp thông tin chương trình hiện tại (công cụ, tổng thời gian, số lượng dòng lệnh) vào ngữ cảnh để trả lời chính xác.
+- Hỗ trợ lưu trữ lịch sử chat trong phiên làm việc.

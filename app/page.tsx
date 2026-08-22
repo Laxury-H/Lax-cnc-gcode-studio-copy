@@ -15,6 +15,7 @@ import {
   useState,
 } from "react";
 import { createPortal } from "react-dom";
+import { AiChatbot } from "./components/AiChatbot";
 
 import {
   DEFAULT_STOCK,
@@ -1524,7 +1525,7 @@ export default function Home() {
   const [measurementSession, setMeasurementSession] = useState(0);
   const [simulatorExpanded, setSimulatorExpanded] = useState(false);
   const [drawer, setDrawer] = useState<
-    "diagnostics" | "parts" | "offcuts" | "resume" | "export" | null
+    "diagnostics" | "parts" | "offcuts" | "resume" | "export" | "ai" | null
   >(null);
   const [resumeSegment, setResumeSegment] = useState(5);
   const [resumeSafeZ, setResumeSafeZ] = useState(50);
@@ -3356,7 +3357,9 @@ export default function Home() {
                         ? t.tabRemnants
                         : drawer === "resume"
                           ? t.tabSmartResume
-                          : t.tabPostProc}
+                          : drawer === "export"
+                            ? t.tabPostProc
+                            : t.tabAiAssistant}
                 </h2>
               </div>
               <button type="button" onClick={() => setDrawer(null)} aria-label={lang === "EN" ? "Close" : "Đóng"}>
@@ -3383,6 +3386,7 @@ export default function Home() {
                   "offcuts",
                   "resume",
                   "export",
+                  "ai",
                 ] as const;
                 const currentIndex = tabs.indexOf(drawer);
                 const nextIndex =
@@ -3460,6 +3464,18 @@ export default function Home() {
               >
                 {lang === "EN" ? "CAM Export" : "Xuất CAM"}
               </button>
+              <button
+                type="button"
+                id="drawer-tab-ai"
+                role="tab"
+                aria-controls="analysis-drawer-panel"
+                aria-selected={drawer === "ai"}
+                tabIndex={drawer === "ai" ? 0 : -1}
+                className={drawer === "ai" ? "is-active" : ""}
+                onClick={() => setDrawer("ai")}
+              >
+                AI
+              </button>
             </div>
             <div
               className="drawer-content"
@@ -3468,7 +3484,18 @@ export default function Home() {
               aria-labelledby={`drawer-tab-${drawer}`}
               tabIndex={0}
             >
-              {drawer === "diagnostics" ? (
+              {drawer === "ai" ? (
+                <AiChatbot 
+                  lang={lang} 
+                  placeholder={t.aiInputPlaceholder} 
+                  contextData={{
+                    tool: { name: simulation.tool.name, speed: simulation.tool.speed },
+                    diagnostics: simulation.diagnostics.length ? simulation.diagnostics.slice(0, 5) : [],
+                    duration: (simulation.totalTime / 60).toFixed(1) + " mins",
+                    lineCount: program.lines.length
+                  }} 
+                />
+              ) : drawer === "diagnostics" ? (
                 simulation.diagnostics.length ? (
                   <div className="diagnostic-list">
                     {simulation.diagnostics.map((diagnostic) => (

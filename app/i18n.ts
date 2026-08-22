@@ -116,6 +116,8 @@ export const translations = {
     tabRemnants: "Phôi dư có thể sử dụng (MER)",
     tabSmartResume: "Phục hồi thông minh",
     tabPostProc: "Xuất CAM (Post-Processor)",
+    tabAiAssistant: "Trợ lý AI G-Code",
+    aiInputPlaceholder: "Hỏi trợ lý về G-code, thông số cắt...",
     noErrorsTitle: "Không phát hiện lỗi",
     noErrorsDesc: "Chương trình nằm trong giới hạn phôi và các trạng thái máy đều hợp lệ.",
     partsDetected: "Đã nhận diện",
