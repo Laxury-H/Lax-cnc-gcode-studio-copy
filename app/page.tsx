@@ -1553,6 +1553,7 @@ export default function Home() {
   const [drawer, setDrawer] = useState<
     "diagnostics" | "parts" | "offcuts" | "resume" | "export" | "ai" | null
   >(null);
+  const [aiPrompt, setAiPrompt] = useState("");
   const [resumeSegment, setResumeSegment] = useState(5);
   const [resumeSafeZ, setResumeSafeZ] = useState(50);
   const [exportType, setExportType] = useState<PostProcessorType>("ncstudio");
@@ -3596,16 +3597,20 @@ export default function Home() {
                     machineProfile: profile,
                     playbackSpeed: speed
                   }} 
+                  externalPrompt={aiPrompt}
+                  onExternalPromptSent={() => setAiPrompt("")}
                 />
               ) : drawer === "diagnostics" ? (
                 simulation.diagnostics.length ? (
                   <div className="diagnostic-list">
                     {simulation.diagnostics.map((diagnostic) => (
-                      <button
-                        type="button"
+                      <div
+                        role="button"
+                        tabIndex={0}
                         className={`diagnostic-item is-${diagnostic.severity}`}
                         key={diagnostic.id}
                         onClick={() => seekToLine(diagnostic.lineIndex)}
+                        onKeyDown={(e) => e.key === "Enter" && seekToLine(diagnostic.lineIndex)}
                       >
                         <span className="diagnostic-icon">
                           <Icon
@@ -3619,10 +3624,24 @@ export default function Home() {
                           <div className="diagnostic-header">
                             <span className="line-badge">{lang === "EN" ? "Line" : "Dòng"} {diagnostic.lineIndex + 1}</span>
                             <span className="error-code">{diagnostic.code}</span>
+                            <button 
+                              className="ask-ai-btn"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const prompt = lang === "EN" 
+                                  ? `I have a G-code error on line ${diagnostic.lineIndex + 1}: [${diagnostic.code}] ${diagnostic.message}. How can I fix this?`
+                                  : `Tôi bị lỗi G-code ở dòng ${diagnostic.lineIndex + 1}: [${diagnostic.code}] ${diagnostic.message}. Làm sao để sửa lỗi này?`;
+                                setAiPrompt(prompt);
+                                setDrawer("ai");
+                              }}
+                            >
+                              <Icon name="bot" size={12} />
+                              {lang === "EN" ? "Ask AI" : "Hỏi AI"}
+                            </button>
                           </div>
                             <small>{translateDiagnostic(diagnostic.message, lang)}</small>
                         </span>
-                      </button>
+                      </div>
                     ))}
                   </div>
                 ) : (

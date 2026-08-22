@@ -20,37 +20,35 @@
     "db:generate": "drizzle-kit generate"
   },
   "dependencies": {
+    "@cloudflare/vite-plugin": "^1.52.0",
     "@google/genai": "^2.18.0",
     "@react-three/drei": "^10.7.8",
     "@react-three/fiber": "^9.7.0",
     "@types/three": "^0.185.3",
+    "@vitejs/plugin-react": "^6.0.5",
+    "@vitejs/plugin-rsc": "^0.5.32",
     "diff": "^9.0.0",
     "drizzle-orm": "0.45.2",
-    
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "react-server-dom-webpack": "^19.2.8",
     "three": "^0.185.1",
-    "vinext": "0.0.50"
+    "vinext": "0.0.50",
+    "vite": "^8.2.1",
+    "wrangler": "4.122.0",
+    "next": "16.2.12"
   },
   "devDependencies": {
-    "@cloudflare/vite-plugin": "1.52.0",
     "@tailwindcss/postcss": "4.3.3",
     "@types/diff": "^7.0.2",
     "@types/node": "22.19.19",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.4",
-    "@vitejs/plugin-react": "6.0.5",
-    "@vitejs/plugin-rsc": "0.5.32",
     "drizzle-kit": "0.31.10",
     "eslint": "9.39.4",
     "eslint-config-next": "16.2.12",
-    "next": "16.2.12",
-    "react-server-dom-webpack": "19.2.8",
     "tailwindcss": "4.3.3",
-    "typescript": "5.9.3",
-    
-    "vite": "8.2.1",
-    "wrangler": "4.122.0"
+    "typescript": "5.9.3"
   },
   "type": "module",
   "displayName": "Lax's CNC",

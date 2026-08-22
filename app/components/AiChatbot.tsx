@@ -10,11 +10,15 @@ export type Message = {
 export function AiChatbot({
   lang,
   placeholder,
-  contextData
+  contextData,
+  externalPrompt,
+  onExternalPromptSent
 }: {
   lang: Lang;
   placeholder: string;
   contextData: Record<string, unknown>;
+  externalPrompt?: string;
+  onExternalPromptSent?: () => void;
 }) {
   const [messages, setMessages] = useState<Message[]>(() => {
     if (typeof window !== "undefined") {
@@ -120,11 +124,12 @@ export function AiChatbot({
     URL.revokeObjectURL(url);
   };
 
-  const sendMessage = async () => {
-    if (!input.trim() || loading) return;
-    const userMsg: Message = { role: "user", text: input };
+  const sendMessage = async (overrideText?: string) => {
+    const textToSend = overrideText || input;
+    if (!textToSend.trim() || loading) return;
+    const userMsg: Message = { role: "user", text: textToSend };
     setMessages((prev) => [...prev, userMsg]);
-    setInput("");
+    if (!overrideText) setInput("");
     setLoading(true);
 
     try {
@@ -152,6 +157,14 @@ export function AiChatbot({
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (externalPrompt) {
+      sendMessage(externalPrompt).then(() => {
+        if (onExternalPromptSent) onExternalPromptSent();
+      });
+    }
+  }, [externalPrompt]);
 
   if (showSettings) {
     return (
