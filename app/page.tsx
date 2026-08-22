@@ -79,6 +79,7 @@ import {
 } from "@/core/ui/work-offset-input";
 
 import { Icon } from "@/core/components/ui/Icon";
+import { GCodeEditor } from "./components/GCodeEditor";
 import { MetricCard } from "@/core/components/ui/MetricCard";
 import { ToolbarButton } from "@/core/components/ui/ToolbarButton";
 import { ResponsiveDialog } from "@/core/components/ui/ResponsiveDialog";
@@ -3682,12 +3683,10 @@ export default function Home() {
                     </label>
                   </div>
                   <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                    <small style={{ color: "#aaa" }}>{lang === "EN" ? `Safe recovery G-code (Insert before Block #${resumeSegment}):` : `G-code khôi phục an toàn (Chèn vào trước Block ${resumeSegment}):`}</small>
                     <textarea
                       readOnly
-                      rows={8}
                       value={generateSmartResume(simulation, resumeSegment, resumeSafeZ, lang)}
-                      style={{ width: "100%", padding: "10px", borderRadius: "4px", border: "1px solid #444", background: "#0d0d0d", color: "#00ff66", fontFamily: "monospace", fontSize: "12px", resize: "vertical" }}
+                      style={{ width: "100%", height: "120px", padding: "8px", borderRadius: "4px", border: "1px solid #444", background: "#1e1e1e", color: "#66ff66", fontFamily: "monospace", resize: "none" }}
                     />
                   </div>
                   <button
@@ -3732,9 +3731,8 @@ export default function Home() {
                     <small style={{ color: "#aaa" }}>{t.camPostResult}:</small>
                     <textarea
                       readOnly
-                      rows={10}
                       value={exportCAM(simulation, exportType, projectName, lang)}
-                      style={{ width: "100%", padding: "10px", borderRadius: "4px", border: "1px solid #444", background: "#0d0d0d", color: "#00eaff", fontFamily: "monospace", fontSize: "12px", resize: "vertical" }}
+                      style={{ width: "100%", height: "180px", padding: "8px", borderRadius: "4px", border: "1px solid #444", background: "#1e1e1e", color: "#66ff66", fontFamily: "monospace", resize: "none" }}
                     />
                   </div>
                   <div style={{ display: "flex", gap: "10px" }}>
@@ -4478,11 +4476,10 @@ export default function Home() {
                 <Icon name="close" />
               </button>
             </div>
-            <textarea
+            <GCodeEditor
               value={draftCode}
-              onChange={(event) => setDraftCode(event.target.value)}
-              spellCheck={false}
-              aria-label={lang === "EN" ? "G-code content" : "Nội dung G-code"}
+              onChange={setDraftCode}
+              lang={lang}
             />
             <div className="editor-help">
               <span>{t.editorHelp1}</span>

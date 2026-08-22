@@ -11,7 +11,7 @@
     "prebuild": "node scripts/patch-vinext-windows-assets.mjs",
     "build": "vinext build && npm run validate:artifact",
     "prestart": "node scripts/patch-vinext-windows-assets.mjs",
-    "start": "node server.ts",
+    "start": "node server.js",
     "test": "npm run build && node --test tests/*.test.mjs",
     "validate:artifact": "node scripts/validate-artifact.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",

@@ -15,6 +15,7 @@
   --orange: #ff8a1f;
   --orange-2: #ff6a00;
   --cyan: #26d9e8;
+  --cyan-rgb: 38, 217, 232;
   --cyan-soft: rgba(38, 217, 232, 0.12);
   --success: #50d890;
   --warning: #ff9f1a;
@@ -6608,4 +6609,99 @@ button:disabled {
   .machine-statebar b {
     font-size: 7px;
   }
+}
+
+.gcode-editor-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  flex: 1;
+  min-height: 0;
+}
+.gcode-editor-toolbar {
+  padding: 8px 16px;
+  background: #0f161a;
+  border-bottom: 1px solid #1a262c;
+  display: flex;
+  justify-content: flex-end;
+}
+.gcode-editor-toolbar .search-box {
+  display: flex;
+  align-items: center;
+  background: #1a262c;
+  border-radius: 4px;
+  padding: 4px 8px;
+  gap: 8px;
+  width: 240px;
+}
+.gcode-editor-toolbar .search-box svg {
+  width: 16px;
+  height: 16px;
+  color: #6a7c88;
+}
+.gcode-editor-toolbar .search-box input {
+  background: transparent;
+  border: none;
+  color: #c8d0d5;
+  font-size: 13px;
+  outline: none;
+  flex: 1;
+  min-width: 0;
+}
+.gcode-editor-toolbar .search-box button {
+  background: transparent;
+  border: none;
+  color: #6a7c88;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+}
+.gcode-editor-toolbar .search-box button:hover {
+  color: #c8d0d5;
+}
+
+.gcode-editor-inner {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.gcode-editor-pre,
+.gcode-editor-textarea {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 15px 18px;
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.65;
+  tab-size: 2;
+  border: 0;
+  outline: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.gcode-editor-pre {
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.1), transparent 45px), #0b1115;
+  color: #dfe6ea;
+  pointer-events: none;
+}
+.gcode-editor-textarea {
+  background: transparent !important;
+  color: transparent !important;
+  caret-color: var(--cyan) !important;
+  resize: none;
+}
+.search-highlight {
+  background: rgba(var(--cyan-rgb), 0.35);
+  color: var(--cyan);
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(var(--cyan-rgb), 0.5);
 }
