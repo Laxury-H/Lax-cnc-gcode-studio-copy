@@ -1,0 +1,29 @@
+  const handleOptimizeGCode = async () => {
+    setIsOptimizing(true);
+    try {
+      const res = await fetch("/api/optimize-gcode", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: draftCode }),
+      });
+      if (!res.ok) throw new Error("Failed to optimize");
+      const data = await res.json();
+      if (data.code) {
+        setDraftCode(data.code);
+        notify(
+          lang === "EN" 
+            ? "AI has successfully optimized the G-code." 
+            : "AI đã tối ưu hóa G-code thành công."
+        );
+      }
+    } catch (err) {
+      console.error(err);
+      notify(
+        lang === "EN" 
+          ? "Failed to optimize G-code." 
+          : "Lỗi khi tối ưu hóa G-code."
+      );
+    } finally {
+      setIsOptimizing(false);
+    }
+  };

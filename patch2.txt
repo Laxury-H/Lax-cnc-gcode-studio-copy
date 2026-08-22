@@ -1,0 +1,9 @@
+              <button
+                type="button"
+                className="ghost-button"
+                style={{ color: "#a855f7", borderColor: "#a855f7" }}
+                disabled={isOptimizing}
+                onClick={handleOptimizeGCode}
+              >
+                {isOptimizing ? (lang === "EN" ? "Optimizing..." : "Đang tối ưu...") : (lang === "EN" ? "✨ AI Optimize" : "✨ Tối ưu AI")}
+              </button>

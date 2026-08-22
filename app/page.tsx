@@ -1502,6 +1502,7 @@ export default function Home() {
   const [projectName, setProjectName] = useState("Tủ bếp căn A-01");
   const [stock, setStock] = useState(DEFAULT_STOCK);
   const [profile, setProfile] = useState<MachineProfile>("router-custom");
+  const [isOptimizing, setIsOptimizing] = useState(false);
   const [workOffsets, setWorkOffsets] = useState(
     createZeroWorkspaceWorkOffsets,
   );
@@ -2142,6 +2143,36 @@ export default function Home() {
         : "Đo 3D đã bật · chọn A/B; dùng X/Y/Z để khóa hướng.",
     );
   }, [changeView, isMeasuring, lang, notify]);
+
+  const handleOptimizeGCode = async () => {
+    setIsOptimizing(true);
+    try {
+      const res = await fetch("/api/optimize-gcode", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: draftCode }),
+      });
+      if (!res.ok) throw new Error("Failed to optimize");
+      const data = await res.json();
+      if (data.code) {
+        setDraftCode(data.code);
+        notify(
+          lang === "EN" 
+            ? "AI has successfully optimized the G-code." 
+            : "AI đã tối ưu hóa G-code thành công."
+        );
+      }
+    } catch (err) {
+      console.error(err);
+      notify(
+        lang === "EN" 
+          ? "Failed to optimize G-code." 
+          : "Lỗi khi tối ưu hóa G-code."
+      );
+    } finally {
+      setIsOptimizing(false);
+    }
+  };
 
   const applyCode = useCallback(
     async (nextCode: string, nextFileName?: string) => {
@@ -4486,6 +4517,15 @@ export default function Home() {
               <span>{t.editorHelp2}</span>
             </div>
             <div className="modal-actions">
+              <button
+                type="button"
+                className="ghost-button"
+                style={{ color: "#a855f7", borderColor: "#a855f7" }}
+                disabled={isOptimizing}
+                onClick={handleOptimizeGCode}
+              >
+                {isOptimizing ? (lang === "EN" ? "Optimizing..." : "Đang tối ưu...") : (lang === "EN" ? "✨ AI Optimize" : "✨ Tối ưu AI")}
+              </button>
               <button
                 type="button"
                 className="ghost-button"
