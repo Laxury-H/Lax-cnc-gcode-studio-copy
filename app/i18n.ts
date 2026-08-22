@@ -77,6 +77,8 @@ export const translations = {
     toolPos: "Vị trí dao phay",
     currentPos: "Vị trí hiện tại (mm)",
     speedControl: "Tốc độ",
+    speedPresetsLabel: "Tùy chỉnh tốc độ",
+    speedPresetsHelp: "VD: 1, 2, 5 (cách nhau bởi phẩy)",
 
     // Metrics Strip / Statistics
     stockMetric: "Phôi",
@@ -400,6 +402,8 @@ export const translations = {
     toolPos: "Tool Position",
     currentPos: "Current Position (mm)",
     speedControl: "Speed",
+    speedPresetsLabel: "Speed Presets",
+    speedPresetsHelp: "Ex: 1, 2, 5 (comma separated)",
 
     // Metrics Strip / Statistics
     stockMetric: "Stock",

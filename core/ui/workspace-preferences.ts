@@ -12,6 +12,7 @@ export type WorkspacePreferences = {
   profile: StudioMachineProfile;
   stock: StockSettings;
   speed: number;
+  speedPresets: number[];
   quality: SimulationQuality;
   showRapids: boolean;
   machineSound: boolean;
@@ -268,7 +269,7 @@ function normalizePreferences(value: unknown): WorkspacePreferences | null {
   ) {
     return null;
   }
-  if (typeof value.speed !== "number" || !SPEEDS.has(value.speed as AllowedSpeed)) {
+  if (typeof value.speed !== "number" || value.speed <= 0) {
     return null;
   }
   if (
@@ -290,11 +291,22 @@ function normalizePreferences(value: unknown): WorkspacePreferences | null {
   const workOffsets = parseWorkOffsets(value.workOffsets);
   if (!workOffsets) return null;
 
+  let speedPresets: number[] = [0.5, 1, 2, 5, 10, 20];
+  if (Array.isArray(value.speedPresets)) {
+    const validPresets = value.speedPresets
+      .filter((v): v is number => typeof v === "number" && v > 0)
+      .sort((a, b) => a - b);
+    if (validPresets.length > 0) {
+      speedPresets = Array.from(new Set(validPresets));
+    }
+  }
+
   return {
     version: 1,
     profile: value.profile as StudioMachineProfile,
     stock,
     speed: value.speed,
+    speedPresets,
     quality: value.quality as SimulationQuality,
     showRapids: value.showRapids,
     machineSound: value.machineSound,

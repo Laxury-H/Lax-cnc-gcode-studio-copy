@@ -2294,7 +2294,7 @@ button.metric-card {
   border-radius: 1px;
   background: linear-gradient(90deg, #00aebf, var(--cyan));
   box-shadow: 0 0 10px rgba(38, 217, 232, 0.35);
-  transition: width 80ms linear;
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .progress-row strong {

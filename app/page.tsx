@@ -207,6 +207,7 @@ function createDefaultWorkspacePreferences(): WorkspacePreferences {
     profile: "router-custom",
     stock: cloneStockSettings(DEFAULT_STOCK),
     speed: 2,
+    speedPresets: [0.5, 1, 2, 5, 10, 20],
     quality: "medium",
     showRapids: true,
     machineSound: false,
@@ -1512,6 +1513,7 @@ export default function Home() {
   const [segmentProgress, setSegmentProgress] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(2);
+  const [speedPresets, setSpeedPresets] = useState<number[]>([0.5, 1, 2, 5, 10, 20]);
   const [quality, setQuality] = useState<SimulationQuality>("medium");
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
@@ -1614,6 +1616,9 @@ export default function Home() {
         setStock(orientedStock);
         setProfile(saved.profile);
         setSpeed(saved.speed);
+        if (saved.speedPresets) {
+          setSpeedPresets(saved.speedPresets);
+        }
         setQuality(saved.quality);
         setShowRapids(saved.showRapids);
         setMachineSound(saved.machineSound);
@@ -1632,6 +1637,7 @@ export default function Home() {
       profile,
       stock: cloneStockSettings(stock),
       speed,
+      speedPresets,
       quality,
       showRapids,
       machineSound,
@@ -1653,6 +1659,7 @@ export default function Home() {
     quality,
     showRapids,
     speed,
+    speedPresets,
     stock,
     workOffsets,
   ]);
@@ -1926,6 +1933,7 @@ export default function Home() {
       profile,
       stock: cloneStockSettings(stock),
       speed,
+      speedPresets,
       quality,
       showRapids,
       machineSound,
@@ -1943,6 +1951,7 @@ export default function Home() {
     quality,
     showRapids,
     speed,
+    speedPresets,
     stock,
     workOffsets,
   ]);
@@ -2000,6 +2009,7 @@ export default function Home() {
     setStock(cloneStockSettings(nextSettingsDraft.stock));
     setProfile(nextSettingsDraft.profile);
     setSpeed(nextSettingsDraft.speed);
+    setSpeedPresets(nextSettingsDraft.speedPresets);
     setQuality(nextSettingsDraft.quality);
     setShowRapids(nextSettingsDraft.showRapids);
     setMachineSound(nextMachineSound);
@@ -2789,12 +2799,11 @@ export default function Home() {
             value={speed}
             onChange={(event) => setSpeed(Number(event.target.value))}
           >
-            <option value={0.5}>0.5×</option>
-            <option value={1}>1×</option>
-            <option value={2}>2×</option>
-            <option value={5}>5×</option>
-            <option value={10}>10×</option>
-            <option value={20}>20×</option>
+            {speedPresets.map((preset) => (
+              <option key={preset} value={preset}>
+                {preset}×
+              </option>
+            ))}
           </select>
         </label>
         <label className="speed-control quality-control">
@@ -3801,12 +3810,40 @@ export default function Home() {
                         }))
                       }
                     >
-                      {[0.5, 1, 2, 5, 10, 20].map((option) => (
+                      {settingsDraft.speedPresets.map((option) => (
                         <option value={option} key={option}>
                           {option}×
                         </option>
                       ))}
                     </select>
+                  </label>
+                  <label>
+                    <span>{t.speedPresetsLabel}</span>
+                    <input
+                      type="text"
+                      defaultValue={settingsDraft.speedPresets.join(", ")}
+                      title={t.speedPresetsHelp}
+                      onBlur={(event) => {
+                        const arr = Array.from(new Set(
+                          event.target.value
+                            .split(",")
+                            .map((s) => Number(s.trim()))
+                            .filter((n) => !isNaN(n) && n > 0)
+                            .sort((a, b) => a - b)
+                        ));
+                        if (arr.length > 0) {
+                          setSettingsDraft((current) => ({
+                            ...current,
+                            speedPresets: arr,
+                            speed: arr.includes(current.speed) ? current.speed : arr[0]
+                          }));
+                          event.target.value = arr.join(", ");
+                        } else {
+                          event.target.value = settingsDraft.speedPresets.join(", ");
+                        }
+                      }}
+                      placeholder="0.5, 1, 2, 5, 10, 20"
+                    />
                   </label>
                   <label>
                     <span>{t.configLabel}</span>
