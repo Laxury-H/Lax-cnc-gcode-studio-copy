@@ -148,6 +148,36 @@ export function interpretGcode(
     );
   }
 
+  for (const motion of context.motions) {
+    if (motion.type !== "rapid" && motion.type !== "dwell" && !motion.machineCoordinates) {
+      const block = parsed.blocks[motion.lineIndex];
+      if (block) {
+        if (motion.coolant === "off") {
+          block.diagnostics.push(
+            blockDiagnostic(
+              block,
+              "warning",
+              "MISSING_COOLANT",
+              null,
+              "Cắt gọt không bật dung dịch làm mát."
+            )
+          );
+        }
+        if (motion.feed && motion.feed >= profile.rapidRate * 0.8) {
+          block.diagnostics.push(
+            blockDiagnostic(
+              block,
+              "warning",
+              "HIGH_FEED_RATE",
+              null,
+              `Tốc độ cắt (${motion.feed}) cao bất thường so với máy (${profile.rapidRate}).`
+            )
+          );
+        }
+      }
+    }
+  }
+
   const diagnostics = mergeDiagnostics(
     ...parsed.blocks.map((block) => {
       block.diagnostics = mergeDiagnostics(block.diagnostics);

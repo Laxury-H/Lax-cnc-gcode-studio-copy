@@ -38,7 +38,7 @@ import {
   programLimitViolation,
 } from "@/core/simulation/program-limits";
 import { SAMPLE_GCODE } from "@/core/simulation/sample-program";
-import { resolveVBitGeometry } from "@/core/simulation/stock-removal-coordinates";
+import { resolveVBitGeometry, resolveSegmentTool } from "@/core/simulation/stock-removal-coordinates";
 import type {
   Axis,
   CoordinateSystem,
@@ -718,12 +718,12 @@ function ToolpathCanvas({
     });
 
     const cutColor = view === "iso" ? "91,238,198" : "38,217,232";
-    const rapidColor = "255,138,31";
-
+    const rapidColor = view === "iso" ? "255,108,220" : "255,60,180";
+    
     const drawBatchedSegments = (
       segs: Segment[],
       filterKind: "rapid" | "cut" | "drill",
-      color: string,
+      defaultColor: string,
       alpha: number,
       lineWidth: number,
       isRapid = false,
@@ -750,78 +750,94 @@ function ToolpathCanvas({
         return;
       }
 
-      ctx.beginPath();
-      let hasPoints = false;
+      const groups = new Map<string, Segment[]>();
       for (let i = 0; i < segs.length; i++) {
         const seg = segs[i];
         const isTravel = seg.machineCoordinates || seg.kind === "rapid";
         if (filterKind === "rapid" && !isTravel) continue;
         if (filterKind === "cut" && (isTravel || seg.kind === "drill")) continue;
         if (seg.points.length < 2) continue;
-        hasPoints = true;
-        const p0 = project(seg.points[0]);
-        ctx.moveTo(p0.x, p0.y);
-        for (let j = 1; j < seg.points.length; j++) {
-          const pj = project(seg.points[j]);
-          ctx.lineTo(pj.x, pj.y);
+        
+        let segColor = defaultColor;
+        if (filterKind === "cut") {
+          const tool = resolveSegmentTool(stock, seg.tool);
+          segColor = getToolTypeColor(tool ? tool.type : "flat", view === "iso");
         }
+        
+        let g = groups.get(segColor);
+        if (!g) { g = []; groups.set(segColor, g); }
+        g.push(seg);
       }
-      if (!hasPoints) return;
 
-      if (glowWidth > 0 && filterKind === "cut") {
-        const toolWidth = Math.max(1, stock.toolDiameter * scale);
-        
-        // 1. Cut the hole (Erase material)
-        ctx.globalCompositeOperation = "destination-out";
-        ctx.strokeStyle = `rgba(0,0,0,1)`;
-        ctx.lineWidth = toolWidth;
-        ctx.lineCap = "round";
-        ctx.lineJoin = "round";
-        ctx.stroke();
-        
-        // 2. Fill center with MDF core
-        ctx.globalCompositeOperation = "destination-over";
-        ctx.strokeStyle = `rgba(152, 117, 75, ${alpha})`; // MDF core
-        ctx.lineWidth = Math.max(0.5, toolWidth - 1.5);
-        ctx.stroke();
-        
-        // 3. Fill edges with shadow
-        ctx.strokeStyle = `rgba(74, 44, 16, ${alpha})`; // Deep shadow
-        ctx.lineWidth = toolWidth;
-        ctx.stroke();
-        
-        // Reset to normal
-        ctx.globalCompositeOperation = "source-over";
+      groups.forEach((groupSegs, color) => {
+        ctx.beginPath();
+        let hasPoints = false;
+        for (let i = 0; i < groupSegs.length; i++) {
+          const seg = groupSegs[i];
+          hasPoints = true;
+          const p0 = project(seg.points[0]);
+          ctx.moveTo(p0.x, p0.y);
+          for (let j = 1; j < seg.points.length; j++) {
+            const pj = project(seg.points[j]);
+            ctx.lineTo(pj.x, pj.y);
+          }
+        }
+        if (!hasPoints) return;
 
-        // Draw a very faint toolpath tracking line in the center
-        ctx.strokeStyle = `rgba(${color}, ${alpha * 0.3})`;
-        ctx.lineWidth = 0.8;
-        ctx.stroke();
-      } else if (glowWidth > 0) {
-        ctx.strokeStyle = view === "iso"
-          ? `rgba(8,15,18,${Math.min(0.72, alpha * 0.72)})`
-          : `rgba(38,217,232,${Math.min(0.16, alpha * 0.16)})`;
-        ctx.lineWidth = glowWidth;
-        ctx.lineCap = "round";
-        ctx.lineJoin = "round";
-        ctx.stroke();
-        
-        ctx.strokeStyle = `rgba(${color},${alpha})`;
-        ctx.lineWidth = lineWidth;
-        ctx.lineCap = "round";
-        ctx.lineJoin = "round";
-        if (isRapid) ctx.setLineDash([7, 5]);
-        ctx.stroke();
-        if (isRapid) ctx.setLineDash([]);
-      } else {
-        ctx.strokeStyle = `rgba(${color},${alpha})`;
-        ctx.lineWidth = lineWidth;
-        ctx.lineCap = "round";
-        ctx.lineJoin = "round";
-        if (isRapid) ctx.setLineDash([7, 5]);
-        ctx.stroke();
-        if (isRapid) ctx.setLineDash([]);
-      }
+        if (glowWidth > 0 && filterKind === "cut") {
+          const toolWidth = Math.max(1, stock.toolDiameter * scale);
+          
+          // 1. Cut the hole (Erase material)
+          ctx.globalCompositeOperation = "destination-out";
+          ctx.strokeStyle = `rgba(0,0,0,1)`;
+          ctx.lineWidth = toolWidth;
+          ctx.lineCap = "round";
+          ctx.lineJoin = "round";
+          ctx.stroke();
+          
+          // 2. Fill center with MDF core
+          ctx.globalCompositeOperation = "destination-over";
+          ctx.strokeStyle = `rgba(152, 117, 75, ${alpha})`; // MDF core
+          ctx.lineWidth = Math.max(0.5, toolWidth - 1.5);
+          ctx.stroke();
+          
+          // 3. Fill edges with shadow
+          ctx.strokeStyle = `rgba(74, 44, 16, ${alpha})`; // Deep shadow
+          ctx.lineWidth = toolWidth;
+          ctx.stroke();
+          
+          // Reset to normal
+          ctx.globalCompositeOperation = "source-over";
+          // Draw a very faint toolpath tracking line in the center
+          ctx.strokeStyle = `rgba(${color}, ${alpha * 0.3})`;
+          ctx.lineWidth = 0.8;
+          ctx.stroke();
+        } else if (glowWidth > 0) {
+          ctx.strokeStyle = view === "iso"
+            ? `rgba(8,15,18,${Math.min(0.72, alpha * 0.72)})`
+            : `rgba(38,217,232,${Math.min(0.16, alpha * 0.16)})`;
+          ctx.lineWidth = glowWidth;
+          ctx.lineCap = "round";
+          ctx.lineJoin = "round";
+          ctx.stroke();
+          
+          ctx.strokeStyle = `rgba(${color},${alpha})`;
+          ctx.lineWidth = lineWidth;
+          ctx.lineCap = "round";
+          ctx.lineJoin = "round";
+          if (isRapid) ctx.setLineDash([7, 5]);
+          ctx.stroke();
+          if (isRapid) ctx.setLineDash([]);
+        } else {
+          ctx.strokeStyle = `rgba(${color},${alpha})`;
+          ctx.lineWidth = lineWidth;
+          ctx.lineCap = "round";
+          ctx.lineJoin = "round";
+          if (isRapid) ctx.setLineDash([7, 5]);
+          ctx.stroke();
+          if (isRapid) ctx.setLineDash([]);
+        }
+      });
     };
 
     const drawSingleSegmentDetail = (
@@ -834,7 +850,11 @@ function ToolpathCanvas({
       const projected = points.map(project);
       const isTravel = segment.machineCoordinates || segment.kind === "rapid";
       if (isTravel && !showRapids) return;
-      const color = isTravel ? rapidColor : cutColor;
+      let color = isTravel ? rapidColor : cutColor;
+      if (!isTravel) {
+        const tool = resolveSegmentTool(stock, segment.tool);
+        color = getToolTypeColor(tool ? tool.type : "flat", view === "iso");
+      }
 
       if (!isTravel && active) {
         ctx.beginPath();
@@ -1466,6 +1486,14 @@ function ToolpathCanvas({
 
 
 
+const getToolTypeColor = (type: string, isIso: boolean) => {
+  switch (type) {
+    case "vbit": return isIso ? "85,185,255" : "55,160,250"; // Blue
+    case "ball": return isIso ? "91,238,198" : "38,217,140"; // Green
+    case "flat": default: return isIso ? "170,180,190" : "150,160,170"; // Gray
+  }
+};
+
 export default function Home() {
   const [code, setCode] = useState(SAMPLE_GCODE);
   const [draftCode, setDraftCode] = useState(SAMPLE_GCODE);
@@ -1746,6 +1774,24 @@ export default function Home() {
     setIsPreparingProgram(false);
     cancelSimulationProcessing();
   }, [cancelSimulationProcessing]);
+
+  const usedToolProfiles = useMemo(() => {
+    const profiles = new Map<string, ToolProfile>();
+    simulation.segments.forEach((seg) => {
+      if (
+        seg.kind === "cut" ||
+        seg.kind === "arc-cw" ||
+        seg.kind === "arc-ccw" ||
+        seg.kind === "drill"
+      ) {
+        const tool = resolveSegmentTool(stock, seg.tool);
+        if (tool && !profiles.has(tool.type)) {
+          profiles.set(tool.type, tool);
+        }
+      }
+    });
+    return Array.from(profiles.values());
+  }, [simulation, stock]);
 
   const errorCount = simulation.diagnostics.filter(
     (diagnostic) => diagnostic.severity === "error",
@@ -3071,9 +3117,28 @@ export default function Home() {
               ) : null}
             </div>
             <div className="path-legend">
-              <span>
-                <i className="legend-line cut" /> {t.cuts}
-              </span>
+              {usedToolProfiles.length > 0 ? (
+                usedToolProfiles.map((tool) => (
+                  <span key={tool.type}>
+                    <i
+                      className="legend-line"
+                      style={{
+                        borderColor: `rgb(${getToolTypeColor(tool.type, view === "iso")})`,
+                        borderTopStyle: "solid",
+                      }}
+                    />{" "}
+                    {tool.type === "vbit"
+                      ? "V-bit"
+                      : tool.type === "ball"
+                        ? "Ball"
+                        : "Flat"}
+                  </span>
+                ))
+              ) : (
+                <span>
+                  <i className="legend-line cut" /> {t.cuts}
+                </span>
+              )}
               <button
                 type="button"
                 className={`rapid-toggle${showRapids ? " is-active" : ""}`}

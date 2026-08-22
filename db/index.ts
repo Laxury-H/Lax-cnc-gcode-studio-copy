@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function getDb(): any {
   console.warn('[AI Studio] Database not connected — using mock');
   const noOp = { 

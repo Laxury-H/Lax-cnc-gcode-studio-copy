@@ -90,14 +90,20 @@ function lerpVec(a: {x:number,y:number,z:number}, b: {x:number,y:number,z:number
   return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t, z: a.z + (b.z - a.z) * t };
 }
 
-function ToolpathOverlay({ simulation, showRapids, showToolpath, showBounds, surfaceZ }: { simulation: Simulation, showRapids: boolean, showToolpath?: boolean, showBounds: boolean, surfaceZ: number }) {
+function ToolpathOverlay({ simulation, stock, showRapids, showToolpath, showBounds, surfaceZ }: { simulation: Simulation, stock: StockSettings, showRapids: boolean, showToolpath?: boolean, showBounds: boolean, surfaceZ: number }) {
   const { cutPositions, rapidPositions, boundsPositions } = useMemo(() => {
-    const cutPositions: number[] = [];
+    const cutPositions: Record<string, number[]> = { flat: [], ball: [], vbit: [] };
     const rapidPositions: number[] = [];
     
     simulation.segments.forEach(seg => {
       const isTravel = seg.machineCoordinates || seg.kind === "rapid";
       if (isTravel && !showRapids) return;
+      
+      const activeTool = resolveSegmentTool(stock, seg.tool);
+      const toolType = activeTool ? activeTool.type : "flat";
+      if (!cutPositions[toolType]) {
+        cutPositions[toolType] = [];
+      }
       
       const pts = seg.points;
       for (let i = 1; i < pts.length; i++) {
@@ -108,7 +114,7 @@ function ToolpathOverlay({ simulation, showRapids, showToolpath, showBounds, sur
         } else {
           // Keep the cutter at its real programmed Z, but project the visual
           // guide onto the stock face so deep cuts are not hidden by the mesh.
-          cutPositions.push(p1.x, p1.y, surfaceZ, p2.x, p2.y, surfaceZ);
+          cutPositions[toolType].push(p1.x, p1.y, surfaceZ, p2.x, p2.y, surfaceZ);
         }
       }
     });
@@ -134,24 +140,29 @@ function ToolpathOverlay({ simulation, showRapids, showToolpath, showBounds, sur
     }
 
     return { cutPositions, rapidPositions, boundsPositions };
-  }, [simulation, showRapids, showBounds, surfaceZ]);
+  }, [simulation, stock, showRapids, showBounds, surfaceZ]);
+
+  const colors = { flat: "#96a0aa", ball: "#26d98c", vbit: "#37a0fa" };
 
   return (
     <group>
-      {showToolpath !== false && cutPositions.length > 0 && (
-        <Line
-          points={cutPositions}
-          color="#6ba9bc"
-          lineWidth={0.85}
-          opacity={0.78}
-          transparent
-          depthTest={false}
-          depthWrite={false}
-          renderOrder={30}
-          toneMapped={false}
-          segments
-        />
-      )}
+      {showToolpath !== false && Object.entries(cutPositions).map(([type, positions]) => (
+        positions.length > 0 && (
+          <Line
+            key={type}
+            points={positions}
+            color={colors[type as keyof typeof colors] || colors.flat}
+            lineWidth={0.85}
+            opacity={0.78}
+            transparent
+            depthTest={false}
+            depthWrite={false}
+            renderOrder={30}
+            toneMapped={false}
+            segments
+          />
+        )
+      ))}
       {showToolpath !== false && showRapids && rapidPositions.length > 0 && (
         <Line 
           points={rapidPositions} 
@@ -1270,6 +1281,7 @@ export function SolidSimulator(props: SolidSimulatorProps) {
             <PartLabelsOverlay simulation={props.simulation} topZ={topZ} />
             <ToolpathOverlay 
               simulation={props.simulation} 
+              stock={props.stock}
               showRapids={props.showRapids ?? true} 
               showToolpath={props.showToolpath ?? true}
               showBounds={props.showBounds ?? true} 

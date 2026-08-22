@@ -702,6 +702,10 @@ export function translateDiagnostic(msg: string, lang: Lang): string {
   if (msg.includes("Chuyển động tạo ra NaN hoặc vô cực")) return "Motion produced NaN or infinity and has been discarded.";
   if (msg.includes("Chuyển động cắt chưa có tốc độ F")) return "Cutting motion is missing a valid feed rate (F).";
   if (msg.includes("Tọa độ X/Y nằm ngoài vùng phôi")) return "X/Y coordinates exceed the declared stock boundaries.";
+  if (msg.includes("Cắt gọt không bật dung dịch làm mát")) return "Cutting motion without active coolant (Missing M8/M7).";
+  if (msg.includes("cao bất thường so với máy")) {
+    return msg.replace("Tốc độ cắt", "Cutting feed rate").replace("cao bất thường so với máy", "is abnormally high compared to the machine's rapid rate");
+  }
   if (msg.includes("đang có cùng offset với G54")) {
     return msg
       .replace("đang có cùng offset với G54.", "has the same offset as G54.")

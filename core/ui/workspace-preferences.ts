@@ -22,16 +22,6 @@ export type WorkspacePreferences = {
 
 export const WORKSPACE_PREFERENCES_KEY = "lax_cnc_workspace_preferences";
 
-type AllowedSpeed = 0.5 | 1 | 2 | 5 | 10 | 20;
-
-const SPEEDS = new Set<AllowedSpeed>([
-  0.5,
-  1,
-  2,
-  5,
-  10,
-  20,
-]);
 const PROFILES = new Set<StudioMachineProfile>(["router-custom", "iso"]);
 const QUALITIES = new Set<SimulationQuality>(["low", "medium", "high"]);
 const Z_ZERO_VALUES = new Set<NonNullable<StockSettings["zZero"]>>([
