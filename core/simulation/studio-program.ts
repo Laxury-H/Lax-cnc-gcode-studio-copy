@@ -376,6 +376,8 @@ function addStudioDiagnostics(
 ): Diagnostic[] {
   const diagnostics = [...base];
   let spindleWarningReported = false;
+  let coolantWarningReported = false;
+  let highFeedWarningReported = false;
 
   const referenceOffset = workOffsets.G54;
   const unconfiguredWorkSystem = motions.find((motion) => {
@@ -467,6 +469,41 @@ function addStudioDiagnostics(
         ),
       );
       spindleWarningReported = true;
+    }
+
+    if (
+      isCut &&
+      motion.coolant === "off" &&
+      !coolantWarningReported
+    ) {
+      diagnostics.push(
+        motionDiagnostic(
+          motion,
+          "warning",
+          "COOLANT_OFF",
+          "Chưa bật dung dịch làm mát / khí thổi (M8) khi đang cắt, có nguy cơ kẹt phoi hoặc cháy dao.",
+        ),
+      );
+      coolantWarningReported = true;
+    }
+
+    if (
+      isCut &&
+      motion.feed !== undefined &&
+      !highFeedWarningReported
+    ) {
+      const highFeedThreshold = motion.units === "mm" ? 15000 : 600;
+      if (motion.feed > highFeedThreshold) {
+        diagnostics.push(
+          motionDiagnostic(
+            motion,
+            "warning",
+            "HIGH_FEED",
+            `Tốc độ cắt (F${motion.feed}) quá cao có thể gây gãy dao hoặc mất bước.`,
+          ),
+        );
+        highFeedWarningReported = true;
+      }
     }
   }
 
