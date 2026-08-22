@@ -1,0 +1,20 @@
+# dependencies
+node_modules/
+
+# build outputs & caches
+dist/
+.vinext/
+.wrangler/
+.sites-runtime/
+.next/
+out/
+tsconfig.tsbuildinfo
+*.log
+*.bak
+*.backup
+*.old
+
+# environment variables & secrets
+.env
+.env.*
+!.env.example
